@@ -1,5 +1,20 @@
 <h1 align="center"><img src="public/mercure.svg" alt="Mercure: Live Updates Made Easy" title="Live Updates Made Easy"></h1>
 
+*Scalingo Fork: Deploy your own Mercure*
+
+Run your own Mercure instance with one click.
+
+[![Deploy](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/Scalingo/mercure-scalingo)
+
+## How to update when new version is released:
+
+```
+git clone git@github.com:Scalingo/mercure-scalingo
+cd mercure-scalingo
+git remote add <app name> git@scalingo.com:<app name>.git
+git push <app name> master
+```
+
 *Protocol and Reference Implementation*
 
 Mercure is a protocol allowing to push data updates to web browsers and other HTTP clients in a convenient, fast, reliable and battery-efficient way.

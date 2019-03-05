@@ -1,3 +1,6 @@
+// +scalingo goVersion go1.12
+// +scalingo install .
+
 module github.com/dunglas/mercure
 
 require (
