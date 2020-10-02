@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-// demo exposes UNSECURE demo endpoints to test discovery and authorization mechanisms
-// add a query parameter named "body" to define the content to return in the response's body
-// add a query parameter named "jwt" set a "mercureAuthorization" cookie containing this token
-// the Content-Type header will automatically be set according to the URL's extension
-func demo(w http.ResponseWriter, r *http.Request) {
+// Demo exposes INSECURE Demo endpoints to test discovery and authorization mechanisms.
+// Add a query parameter named "body" to define the content to return in the response's body.
+// Add a query parameter named "jwt" set a "mercureAuthorization" cookie containing this token.
+// The Content-Type header will automatically be set according to the URL's extension.
+func Demo(w http.ResponseWriter, r *http.Request) {
 	// JSON-LD is the preferred format
 	mime.AddExtensionType(".jsonld", "application/ld+json")
 
@@ -26,7 +26,7 @@ func demo(w http.ResponseWriter, r *http.Request) {
 
 	header := w.Header()
 	// Several Link headers are set on purpose to allow testing advanced discovery mechanism
-	header.Add("Link", "</hub>; rel=\"mercure\"")
+	header.Add("Link", "<"+defaultHubURL+">; rel=\"mercure\"")
 	header.Add("Link", fmt.Sprintf("<%s>; rel=\"self\"", url))
 	if mimeType != "" {
 		header.Set("Content-Type", mimeType)
@@ -34,7 +34,7 @@ func demo(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     "mercureAuthorization",
-		Path:     "/hub",
+		Path:     defaultHubURL,
 		Value:    jwt,
 		HttpOnly: r.TLS != nil,
 		SameSite: http.SameSiteStrictMode,

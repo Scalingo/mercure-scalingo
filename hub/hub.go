@@ -1,100 +1,63 @@
 package hub
 
 import (
+	"log"
 	"net/http"
 
-	bolt "go.etcd.io/bbolt"
+	"github.com/spf13/viper"
 )
 
-// Hub stores channels with clients currently subcribed and allows to dispatch updates
+// Hub stores channels with clients currently subscribed and allows to dispatch updates.
 type Hub struct {
-	subscribers        subscribers
-	updates            chan *serializedUpdate
-	options            *Options
-	newSubscribers     chan chan *serializedUpdate
-	removedSubscribers chan chan *serializedUpdate
-	publisher          Publisher
-	history            History
+	config             *viper.Viper
+	transport          Transport
 	server             *http.Server
+	topicSelectorStore *TopicSelectorStore
+	metrics            *Metrics
 }
 
-// Start starts the hub
-func (h *Hub) Start() {
-	go func() {
-		for {
-			select {
+// Stop stops disconnect all connected clients.
+func (h *Hub) Stop() error {
+	return h.transport.Close()
+}
 
-			case s := <-h.newSubscribers:
-				h.subscribers.Lock()
-				h.subscribers.m[s] = struct{}{}
-				h.subscribers.Unlock()
+// NewHub creates a hub using the Viper configuration.
+func NewHub(v *viper.Viper) (*Hub, error) {
+	if err := ValidateConfig(v); err != nil {
+		return nil, err
+	}
 
-			case s := <-h.removedSubscribers:
-				h.subscribers.Lock()
-				delete(h.subscribers.m, s)
-				h.subscribers.Unlock()
-				close(s)
+	t, err := NewTransport(v)
+	if err != nil {
+		return nil, err
+	}
 
-			case serializedUpdate, ok := <-h.updates:
-				if ok {
-					if err := h.history.Add(serializedUpdate.Update); err != nil {
-						panic(err)
-					}
-				}
+	return NewHubWithTransport(v, t, NewTopicSelectorStore()), nil
+}
 
-				h.subscribers.RLock()
-				for s := range h.subscribers.m {
-					if ok {
-						s <- serializedUpdate
-					} else {
-						close(s)
-					}
-				}
-				h.subscribers.RUnlock()
+// NewHubWithTransport creates a hub.
+func NewHubWithTransport(v *viper.Viper, t Transport, tss *TopicSelectorStore) *Hub {
+	return &Hub{
+		v,
+		t,
+		nil,
+		tss,
+		NewMetrics(),
+	}
+}
 
-				if !ok {
-					return
-				}
-			}
+// Start is an helper method to start the Mercure Hub.
+func Start() {
+	h, err := NewHub(viper.GetViper())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer func() {
+		if err = h.Stop(); err != nil {
+			log.Fatalln(err)
 		}
 	}()
-}
 
-// Stop stops disconnect all connected clients
-func (h *Hub) Stop() {
-	close(h.updates)
-}
-
-// DispatchUpdate dispatches an update to all subscribers
-func (h *Hub) DispatchUpdate(u *Update) {
-	h.updates <- newSerializedUpdate(u)
-}
-
-// NewHubFromEnv creates a hub using the configuration set in env vars
-func NewHubFromEnv() (*Hub, *bolt.DB, error) {
-	options, err := NewOptionsFromEnv()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	db, err := bolt.Open(options.DBPath, 0600, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return NewHub(&localPublisher{}, &boltHistory{DB: db}, options), db, nil
-}
-
-// NewHub creates a hub
-func NewHub(publisher Publisher, history History, options *Options) *Hub {
-	return &Hub{
-		subscribers{m: make(map[chan *serializedUpdate]struct{})},
-		make(chan *serializedUpdate),
-		options,
-		make(chan (chan *serializedUpdate)),
-		make(chan (chan *serializedUpdate)),
-		publisher,
-		history,
-		nil,
-	}
+	h.Serve()
 }

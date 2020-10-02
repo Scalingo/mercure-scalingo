@@ -2,10 +2,14 @@ package hub
 
 import (
 	"os"
+	"os/exec"
 	"testing"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const testAddr = "127.0.0.1:4242"
@@ -13,65 +17,97 @@ const testAddr = "127.0.0.1:4242"
 func TestNewHub(t *testing.T) {
 	h := createDummy()
 
-	assert.IsType(t, &Options{}, h.options)
-	assert.IsType(t, map[chan *serializedUpdate]struct{}{}, h.subscribers.m)
-	assert.IsType(t, make(chan (chan *serializedUpdate)), h.newSubscribers)
-	assert.IsType(t, make(chan (chan *serializedUpdate)), h.removedSubscribers)
-	assert.IsType(t, make(chan *serializedUpdate), h.updates)
+	assert.IsType(t, &viper.Viper{}, h.config)
 }
 
-func TestNewHubFromEnv(t *testing.T) {
-	os.Setenv("PUBLISHER_JWT_KEY", "foo")
-	os.Setenv("JWT_KEY", "bar")
-	defer os.Unsetenv("PUBLISHER_JWT_KEY")
-	defer os.Unsetenv("JWT_KEY")
+func TestNewHubWithConfig(t *testing.T) {
+	v := viper.New()
+	v.Set("publisher_jwt_key", "foo")
+	v.Set("jwt_key", "bar")
 
-	h, db, err := NewHubFromEnv()
-	defer db.Close()
-	assert.NotNil(t, h)
-	assert.NotNil(t, db)
+	h, err := NewHub(v)
 	assert.Nil(t, err)
+	require.NotNil(t, h)
+	h.Stop()
 }
 
-func TestNewHubFromEnvError(t *testing.T) {
-	h, db, err := NewHubFromEnv()
+func TestNewHubValidationError(t *testing.T) {
+	h, err := NewHub(viper.New())
 	assert.Nil(t, h)
-	assert.Nil(t, db)
 	assert.Error(t, err)
 }
 
+func TestNewHubTransportValidationError(t *testing.T) {
+	v := viper.New()
+	v.Set("publisher_jwt_key", "foo")
+	v.Set("jwt_key", "bar")
+	v.Set("transport_url", "foo://")
+
+	h, err := NewHub(v)
+	assert.Nil(t, h)
+	assert.Error(t, err)
+}
+
+func TestStartCrash(t *testing.T) {
+	if os.Getenv("BE_START_CRASH") == "1" {
+		Start()
+
+		return
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestStartCrash") //nolint:gosec
+	cmd.Env = append(os.Environ(), "BE_START_CRASH=1")
+	err := cmd.Run()
+
+	e, ok := err.(*exec.ExitError)
+	require.True(t, ok)
+	assert.False(t, e.Success())
+}
+
 func createDummy() *Hub {
-	return NewHub(&localPublisher{}, &noHistory{}, &Options{PublisherJWTKey: []byte("publisher"), SubscriberJWTKey: []byte("subscriber")})
+	v := viper.New()
+	SetConfigDefaults(v)
+	v.SetDefault("heartbeat_interval", time.Duration(0))
+	v.SetDefault("publisher_jwt_key", "publisher")
+	v.SetDefault("subscriber_jwt_key", "subscriber")
+
+	return NewHubWithTransport(v, NewLocalTransport(), NewTopicSelectorStore())
 }
 
 func createAnonymousDummy() *Hub {
-	return NewHub(&localPublisher{}, &noHistory{}, &Options{
-		PublisherJWTKey:  []byte("publisher"),
-		SubscriberJWTKey: []byte("subscriber"),
-		AllowAnonymous:   true,
-		Addr:             testAddr,
-	})
+	return createDummyWithTransportAndConfig(NewLocalTransport(), viper.New())
 }
 
-func createAnonymousDummyWithHistory(h History) *Hub {
-	return NewHub(&localPublisher{}, h, &Options{
-		PublisherJWTKey:  []byte("publisher"),
-		SubscriberJWTKey: []byte("subscriber"),
-		AllowAnonymous:   true,
-		Addr:             testAddr,
-	})
+func createDummyWithTransportAndConfig(t Transport, v *viper.Viper) *Hub {
+	SetConfigDefaults(v)
+	v.SetDefault("heartbeat_interval", time.Duration(0))
+	v.SetDefault("publisher_jwt_key", "publisher")
+	v.SetDefault("subscriber_jwt_key", "subscriber")
+	v.SetDefault("allow_anonymous", true)
+	v.SetDefault("addr", testAddr)
+
+	return NewHubWithTransport(v, t, NewTopicSelectorStore())
 }
 
-func createDummyAuthorizedJWT(h *Hub, publisher bool, targets []string) string {
-	var key []byte
+func createDummyAuthorizedJWT(h *Hub, r role, topics []string) string {
 	token := jwt.New(jwt.SigningMethodHS256)
+	key := h.getJWTKey(r)
 
-	if publisher {
-		key = h.options.PublisherJWTKey
-		token.Claims = &claims{mercureClaim{Publish: targets}, jwt.StandardClaims{}}
-	} else {
-		key = h.options.SubscriberJWTKey
-		token.Claims = &claims{mercureClaim{Subscribe: targets}, jwt.StandardClaims{}}
+	switch r {
+	case rolePublisher:
+		token.Claims = &claims{mercureClaim{Publish: topics}, jwt.StandardClaims{}}
+
+	case roleSubscriber:
+		var payload struct {
+			Foo string `json:"foo"`
+		}
+		payload.Foo = "bar"
+		token.Claims = &claims{
+			mercureClaim{
+				Subscribe: topics,
+				Payload:   payload,
+			},
+			jwt.StandardClaims{},
+		}
 	}
 
 	tokenString, _ := token.SignedString(key)

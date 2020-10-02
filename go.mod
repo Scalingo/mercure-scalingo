@@ -1,30 +1,37 @@
-// +scalingo goVersion go1.12
+// +scalingo goVersion go1.14
 // +scalingo install .
 
 module github.com/dunglas/mercure
 
+go 1.14
+
 require (
-	github.com/boltdb/bolt v1.3.1 // indirect
-	github.com/codegangsta/negroni v1.0.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/gorilla/handlers v1.4.0
-	github.com/gorilla/mux v1.6.2
-	github.com/joho/godotenv v1.3.0
-	github.com/joonix/log v0.0.0-20180502111528-d2d3f2f4a806
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/mattn/goveralls v0.0.2 // indirect
-	github.com/onsi/gomega v1.4.2 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/satori/go.uuid v1.2.1-0.20180103174451-36e9d2ebbde5
-	github.com/sirupsen/logrus v1.0.6
-	github.com/stretchr/testify v1.2.2
-	github.com/unrolled/secure v0.0.0-20180914162101-439d7b25425f
-	github.com/yosida95/uritemplate v0.0.0-20170413134207-5c22f358020b
-	go.etcd.io/bbolt v1.3.0
-	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
-	golang.org/x/tools v0.0.0-20181011042414-1f849cf54d09 // indirect
-	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.4
+	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
+	github.com/mitchellh/mapstructure v1.3.2 // indirect
+	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/prometheus/client_golang v1.7.1
+	github.com/prometheus/client_model v0.2.0
+	github.com/sirupsen/logrus v1.6.0
+	github.com/spf13/afero v1.3.1 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
+	github.com/spf13/cobra v1.0.0
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.7.0
+	github.com/stretchr/testify v1.5.1
+	github.com/unrolled/secure v1.0.8
+	github.com/yosida95/uritemplate v2.0.0+incompatible
+	go.etcd.io/bbolt v1.3.5
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	golang.org/x/text v0.3.3 // indirect
+	google.golang.org/genproto v0.0.0-20200707001353-8e8330bf89df // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
+	gopkg.in/ini.v1 v1.57.0 // indirect
 )

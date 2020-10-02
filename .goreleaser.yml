@@ -2,7 +2,9 @@ before:
   hooks:
   - go mod download
 builds:
--
+- <<: &build_defaults
+    ldflags:
+      - -s -w -X github.com/dunglas/mercure/common.version={{ .Version }} -X github.com/dunglas/mercure/common.commit={{ .ShortCommit }} -X github.com/dunglas/mercure/common.buildDate={{ .Date }}
   env:
     - CGO_ENABLED=0
   goos:
@@ -14,21 +16,22 @@ builds:
     - amd64
     - arm
     - arm64
-archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
-  files:
-  - COPYRIGHT
-  - LICENSE
-  - README.md
-  - public/*
-  format_overrides:
-  - goos: windows
-    format: zip
+archives:
+  -
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    files:
+    - COPYRIGHT
+    - LICENSE
+    - README.md
+    - public/*
+    format_overrides:
+    - goos: windows
+      format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -39,6 +42,8 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+release:
+  prerelease: auto
 dockers:
 -
   image_templates:
