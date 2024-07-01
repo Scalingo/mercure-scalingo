@@ -1,0 +1,20 @@
+apiVersion: v2
+name: mercure
+description: A Helm chart to install a Mercure Hub in a Kubernetes cluster. Mercure is a protocol to push data updates to web browsers and other HTTP clients in a convenient, fast, reliable and battery-efficient way.
+home: https://mercure.rocks
+icon: https://mercure.rocks/static/logo.svg
+sources:
+- https://github.com/dunglas/mercure
+keywords:
+- mercure
+- hub
+- push
+- streaming-api
+- async-api
+type: application
+version: 0.16.2
+appVersion: "v0.16.2"
+maintainers:
+  - name: dunglas
+    email: kevin@dunglas.fr
+    url: https://dunglas.fr

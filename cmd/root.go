@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/dunglas/mercure"
 	"github.com/dunglas/mercure/common"
-	"github.com/dunglas/mercure/hub"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,26 +19,27 @@ other HTTP clients in a convenient, fast, reliable and battery-efficient way.
 The Mercure Hub is the reference implementation of the Mercure protocol.
 
 Go to https://mercure.rocks for more information!`,
-	Run: func(cmd *cobra.Command, args []string) {
-		hub.Start()
+	Run: func(_ *cobra.Command, _ []string) {
+		mercure.Start() //nolint:staticcheck
 	},
 }
 
 // Execute runs the root command.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }
 
 func init() { //nolint:gochecknoinits
+	log.Println("/!\\ This Mercure binary is deprecated, use the binary based on Caddy Server instead! See https://mercure.rocks/docs/UPGRADE")
+
 	v := viper.GetViper()
 	cobra.OnInitialize(func() {
-		hub.InitConfig(v)
-		hub.InitLogrus()
+		mercure.InitConfig(v) //nolint:staticcheck
 	})
 	fs := rootCmd.Flags()
-	hub.SetFlags(fs, v)
+	mercure.SetFlags(fs, v) //nolint:staticcheck
 
 	appVersion := common.AppVersion
 	rootCmd.Version = appVersion.Shortline()

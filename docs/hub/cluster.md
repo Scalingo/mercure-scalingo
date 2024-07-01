@@ -3,26 +3,26 @@
 The free version of the Mercure.rocks Hub is shipped with transports (BoltDB and local) that can only run on a single node.
 However, the Mercure.rocks Hub has been designed from the ground up to support clusters.
 
-Both [the managed (starting from the Pro plan) and the High Availability (HA) versions of the Mercure.rocks Hub](https://mercure.rocks/pricing) natively run on multiple nodes.
+Both [the Cloud (starting from the Pro plan) and the On Premise versions of the Mercure.rocks Hub](https://mercure.rocks/pricing) natively run on multiple nodes.
 These versions are designed for fault tolerance and can support very high loads.
 
 Both versions work by providing extra transports supporting synchronization of several nodes.
 They support all features of the free Hub.
 
-If you don't want to purchase a managed or an On Premise version of the Mercure.rocks Hub, you can also create your custom build of Mercure.rocks [using a custom transport](https://github.com/dunglas/mercure/blob/master/hub/transport.go#L13-L22).
+If you don't want to purchase a Cloud or an On Premise version of the Mercure.rocks Hub, you can also create your custom build of Mercure.rocks [using a custom transport](https://github.com/dunglas/mercure/blob/main/transport.go#L40-L52).
 
 ## Managed Version
 
-[The managed version](https://mercure.rocks/pricing) is hosted on our own High Availability infrastructure (built on top of Kubernetes). This service is 100% hosted and managed: you have nothing to do!
+[The Cloud version](cloud.md) is hosted on our own High Availability infrastructure (built on top of Kubernetes). This service is 100% hosted and managed: you have nothing to do!
 
 The managed version of the Mercure.rocks Hub can be purchased [directly online](https://mercure.rocks/pricing).
 After the purchase, a production-ready Hub is instantly deployed.
 
 To use it, just configure your custom domain name (if any) and your secret JWT key from the administration panel, that's all!
 
-## High Availability Version
+## High Availability On Premise Version
 
-The High Availability Mercure.rocks Hub is a drop-in replacement for the free Hub which allows to spread the load across as many servers as you want. It is designed to run on your own servers and is fault tolerant by default.
+The High Availability On Premise Mercure.rocks Hub is a drop-in replacement for the free Hub which allows to spread the load across as many servers as you want. It is designed to run on your own servers and is fault tolerant by default.
 
 The HA version is shipped with transports having node synchronization capabilities.
 These transports can rely on:
@@ -37,7 +37,7 @@ We can help you to decide which synchronization mechanism will be the best suite
 The HA version is provided as binaries and as a Docker image. We also maintain a Helm chart allowing to install it
 on any Kubernetes cluster.
 
-For more details (and a benchmark), [refer to the case study presented by the iGraal's CTO](https://speakerdeck.com/dunglas/mercure-real-time-for-php-made-easy?slide=52).
+For more details (and a benchmark), [read the case studies section](../spec/use-cases.md#case-studies).
 
 ### Purchasing
 
@@ -46,16 +46,14 @@ To purchase the On Premise version of the Mercure.rocks Hub, drop us a mail: [co
 ### Setting the License
 
 A license key is provided when you purchase the High Availability version of the Mercure.rocks Hub.
-This key must be set in a configuration parameter named `license`.
-All configuration formats supported by the Mercure.rocks hub are supported (YAML, environment variables...).
+This key must be set in an environment variable named `MERCURE_LICENSE`.
 
 Ex:
 
-```yaml
-# mercure.yaml
-license: '<my-license-key>'
-# ...
-```
+    MERCURE_LICENSE=snip \
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    ./mercure run
 
 If you use the Helm chart, set the `license` value and change the Docker image to use the one provided.
 
@@ -80,19 +78,15 @@ Most Cloud Computing platforms also provide managed versions of Redis.
 
 ##### Configuration
 
-All the configuration parameters, and formats, supported by the free Mercure.rocks Hub are also available.
-See https://mercure.rocks/docs/hub/config.
+All [the configuration parameters and formats](https://mercure.rocks/docs/hub/config) supported by the free Mercure.rocks Hub are also available.
 
-To use Redis, the `transport_url` configuration parameter must be set like in this example:
+To use Redis, the `MERCURE_TRANSPORT_URL` environment variable must be set like in this example:
 
-```yaml
-# mercure.yaml
-transport_url: redis://127.0.0.1:6379/mercure-ha
-license: '...'
-addr: :3001
-jwt_key: '!ChangeMe!'
-# ...
-```
+    MERCURE_TRANSPORT_URL=redis://127.0.0.1:6379/mercure-ha \
+    MERCURE_LICENSE=snip \
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    ./mercure run
 
 The following options can be passed as query parameters of the URL set in `transport_url`:
 
@@ -116,27 +110,23 @@ Most Cloud Computing platforms also provide managed versions of PostgreSQL.
 | Presence API    | ❌ (planned) |
 | Custom event ID | ✅           |
 
-##### Configuration
+##### PostgreSQL Configuration
 
-All the configuration parameters, and formats, supported by the free Mercure.rocks Hub are also available.
-See https://mercure.rocks/docs/hub/config.
+All [the configuration parameters and formats](https://mercure.rocks/docs/hub/config) supported by the free Mercure.rocks Hub are also available.
 
-To use PostgreSQL `LISTEN`/`NOTIFY`, the `transport_url` configuration parameter must be set like in this example:
+To use PostgreSQL `LISTEN`/`NOTIFY`, the `MERCURE_TRANSPORT_URL` environment variable must be set like in this example:
 
-```yaml
-# mercure.yaml
-transport_url: postgres://user:password@127.0.0.1/mercure-ha
-license: '...'
-addr: :3001
-jwt_key: '!ChangeMe!'
-# ...
-```
+    MERCURE_TRANSPORT_URL=postgres://user:password@127.0.0.1/mercure-ha \
+    MERCURE_LICENSE=snip \
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    ./mercure run
 
-The following options can be passed as query parameters of the URL set in `transport_url`: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
+[Options supported by `libpq`](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) can be passed as query parameters of the URL set in `transport_url`.
 
 #### Kafka Transport
 
-The Kafka transport should only be used when Pulsar is already part of your stack.
+The Kafka transport should only be used when Kafka is already part of your stack.
 
 To install Apache Kafka, [read the quickstart guide](https://kafka.apache.org/quickstart).
 
@@ -154,21 +144,17 @@ The Mercure.rocks hub has been tested with:
 | Presence API    | ❌           |
 | Custom event ID | ✅           |
 
-##### Configuration
+##### Kafka Configuration
 
-All the configuration parameters, and formats, supported by the free Mercure.rocks Hub are also available.
-See https://mercure.rocks/docs/hub/config.
+All [the configuration parameters and formats](https://mercure.rocks/docs/hub/config) supported by the free Mercure.rocks Hub are also available.
 
-To use Kafka, the `transport_url` configuration parameter must be set like in this example:
+To use Kafka, the `MERCURE_TRANSPORT_URL` environment variable must be set like in this example:
 
-```yaml
-# mercure.yaml
-transport_url: kafka://kafka/?addr=localhost:9092&topic=mercure-ha
-license: '...'
-addr: :3001
-jwt_key: '!ChangeMe!'
-# ...
-```
+    MERCURE_TRANSPORT_URL=kafka://kafka/?addr=localhost:9092&topic=mercure-ha \
+    MERCURE_LICENSE=snip \
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    ./mercure run
 
 The following options can be passed as query parameters of the URL set in `transport_url`:
 
@@ -193,21 +179,17 @@ To install Apache Pulsar, [read the documentation](https://pulsar.apache.org/doc
 | Presence API    | ❌           |
 | Custom event ID | ❌ (planned) |
 
-##### Configuration
+##### Pulsar Configuration
 
-All the configuration parameters, and formats, supported by the free Mercure.rocks Hub are also available.
-See https://mercure.rocks/docs/hub/config.
+All [the configuration parameters and formats](https://mercure.rocks/docs/hub/config) supported by the free Mercure.rocks Hub are also available.
 
-To use Pulsar, the `transport_url` configuration parameter must be set like in this example:
+To use Pulsar, the `MERCURE_TRANSPORT_URL` environment variable must be set like in this example:
 
-```yaml
-# mercure.yaml
-transport_url: pulsar://localhost:6650?topic=mercure-ha&subscription_name=the-node-id
-license: '...'
-addr: :3001
-jwt_key: '!ChangeMe!'
-# ...
-```
+    MERCURE_TRANSPORT_URL=pulsar://localhost:6650?topic=mercure-ha&subscription_name=the-node-id \
+    MERCURE_LICENSE=snip \
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' \
+    ./mercure run
 
 The following options can be passed as query parameters of the URL set in `transport_url`:
 
@@ -218,9 +200,13 @@ The following options can be passed as query parameters of the URL set in `trans
 
 ### Docker Images and Kubernetes Chart
 
-An official Docker image and [a Kubernetes Chart](https://github.com/helm/charts/tree/master/stable/mercure) are available.
+An official Docker image and [a Kubernetes Chart](install.md#kubernetes) are available.
 Contact us if you need help to use them.
 
 ### Updates
 
 New releases of the High Availability Mercure.rocks Hub are automatically available available in the Amazon S3 bucket containing the binary and on the Docker registry.
+
+## Support
+
+For support requests related to the On Premise version of Mercure.rocks, send a mail to [contact@mercure.rocks](mailto:contact@mercure.rocks?subject=On%20Premise%20support%20request).

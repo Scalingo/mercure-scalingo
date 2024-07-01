@@ -1,3 +1,4 @@
+---
 run:
   tests: true
 
@@ -10,6 +11,33 @@ linters:
     - wsl
     - gomnd
     - testpackage
+    - exhaustruct
+    - paralleltest
+    - cyclop
+    - forcetypeassert
+    - tagliatelle
+    - varnamelen
+    - nonamedreturns
+    - testableexamples
+    - musttag
+    - depguard
+    - mnd
+
+    # weird issues
+    - nolintlint
+    - canonicalheader
+
+    # deprecated
+    - interfacer
+    - maligned
+    - scopelint
+    - golint
+    - exhaustivestruct
+    - varcheck
+    - ifshort
+    - deadcode
+    - nosnakecase
+    - structcheck
 
 issues:
   exclude-rules:
@@ -18,3 +46,6 @@ issues:
         - gochecknoglobals
         - funlen
         - godox
+        - noctx
+        - wrapcheck
+        - goconst
