@@ -5,7 +5,7 @@
 When you open a Pull Request to the project, you agree to license your code under the [GNU AFFERO GENERAL PUBLIC LICENSE](LICENSE)
 and to transfer the copyright on the submitted code to [Kévin Dunglas](https://dunglas.fr).
 
-Be sure to you have the right to do that (if you are a professional, ask your company)!
+Be sure to have the right to do that (if you are a professional, ask your company)!
 
 If you include code from another project, please mention it in the Pull Request description and credit the original author.
 
@@ -14,7 +14,7 @@ If you include code from another project, please mention it in the Pull Request 
 The commit message must follow the [Conventional Commits specification](https://www.conventionalcommits.org/).
 The following types are allowed:
 
-* `fix`: bug fix
+* `fix`: bugfix
 * `feat`: new feature
 * `docs`: change in the documentation
 * `spec`: spec change
@@ -36,30 +36,30 @@ Examples:
 
 ## Hub
 
-Clone the project:
+Clone the project and make your changes:
 
-    $ git clone https://github.com/dunglas/mercure
-    
-Install Gin for Live Reloading:
-
-    $ go get github.com/codegangsta/gin
-
-Install the dependencies:
-
-    $ cd mercure
-    $ go get
-
-Run the server:
-
-    $ gin run main.go
-
-Go to `http://localhost:3000` and enjoy!
+    git clone https://github.com/dunglas/mercure
+    cd mercure
 
 To run the test suite:
 
-    $ go test -v -timeout 30s github.com/dunglas/mercure/hub
+    go test -v -timeout 30s github.com/dunglas/mercure
 
-When you send a PR, just make sure that:
+To test the Caddy module:
+
+    cd caddy/mercure
+    MERCURE_PUBLISHER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' MERCURE_SUBSCRIBER_JWT_KEY='!ChangeThisMercureHubJWTSecretKey!' go run main.go run --config ../../dev.Caddyfile
+
+Go to `https://localhost` and enjoy!
+
+To test the legacy server:
+
+    cd cmd/mercure
+    go run main.go
+
+Go to `http://localhost:3000` and enjoy!
+
+When you send a PR, make sure that:
 
 * You add valid test cases.
 * Tests are green.
@@ -67,13 +67,18 @@ When you send a PR, just make sure that:
 * You make the PR on the same branch you based your changes on. If you see commits
   that you did not make in your PR, you're doing it wrong.
 
+### Configuring Visual Studio Code
+
+A configuration for VSCode is provided in the `.vscode/` directory of the repository.
+It is automatically loaded by VS Code.
+
 ### Finding Deadlocks
 
 To debug potential deadlocks:
 
 1. Install `go-deadlock`: `./tests/use-go-deadlock.sh`
 2. Run the tests in race mode: `go test -race ./... -v`
-3. To stress test the app, run the load test (see `docs/load-testing.md`)
+3. To stress-test the app, run the load test (see `docs/load-testing.md`)
 4. Be sure to remove `go-deadlock` before committing
 
 ## Spec
@@ -86,7 +91,6 @@ To contribute to the protocol itself:
 * Make your changes
 * [Download Mmark](https://github.com/mmarkdown/mmark/releases)
 * [Download `xml2rfc` using pip](https://pypi.org/project/xml2rfc/): `pip install xml2rfc`
-* Format the Markdown file: `mmark -markdown -w spec/mercure.md`
 * Generate the XML file: `mmark spec/mercure.md > spec/mercure.xml`
 * Validate the generated XML file and generate the text file: `xml2rfc --text --v3 spec/mercure.xml`
 * Remove non-ASCII characters from the generated `mercure.txt` file (example: K**é**vin)

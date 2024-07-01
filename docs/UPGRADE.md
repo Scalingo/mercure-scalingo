@@ -1,5 +1,58 @@
 # Upgrade
 
+## 0.16.2
+
+The `Caddyfile.dev` file has been renamed `dev.Caddyfile` to match new Caddy best practices
+and prevent "ambigous adapter" issues.
+
+## 0.14.4
+
+This release is built on top of [Caddy 2.6](https://github.com/caddyserver/caddy/releases/tag/v2.6.0).
+Caddy 2.6 removed support for single-hyphen long-form flags (such as `-config`), use the double-hyphen syntax instead (`--config`).
+
+## 0.14.3
+
+The `mercure_subscribers` field of the Prometheus endpoint has been renamed `mercure_subscribers_connected` for better interoperability (including with Datadog).
+
+## 0.14.1
+
+The default dev key changed from `!ChangeMe!` to `!ChangeThisMercureHubJWTSecretKey!` to respect the specification (they key must longer than 256 bits).
+
+## 0.14
+
+The query parameter allowing to fetch past events has been renamed `lastEventID`: in your clients, replace all occurences of the `Last-Event-ID` query parameter by `lastEventID`.
+
+Publishing public updates in topics not explictly listed in the `mercure.publish` JWT claim isn't supported anymore.
+To let your publishers publish (public and private updates) in all topics, use the special `*` topic selector:
+
+```patch
+ {
+   "mercure": {
+-    "publish": []
++    "publish": ["*"]
+ }
+```
+
+Backward compatibility with the old version of the protocol (version 7) can be enabled by setting the `protocol_version_compatibility` directive to `7` in your `Caddyfile`.
+
+## 0.13
+
+The `DEBUG` environment variable has gone. Set the `GLOBAL_OPTIONS` environment variable to `debug` instead.
+
+## 0.11
+
+The Mercure.rocks Hub is now available as a module for the [Caddy web server](https://caddyserver.com/).
+It is also easier to use as [a standalone Go library](https://pkg.go.dev/github.com/dunglas/mercure).
+We still provide standalone binaries, but it's now a custom build of Caddy including the Mercure module.
+
+Builds of the legacy server are also available to ease the transition, but starting with version 0.12 only the Caddy-based builds will be provided (they have the `legacy` prefix).
+
+Relying on Caddy allows to use the Mercure.rocks Hub as a [reverse proxy](https://caddyserver.com/docs/quick-starts/reverse-proxy) for your site or API that also adds the Mercure well-known URL (`/.well-known/mercure`). Thanks to this new feature, the well-known URL can be on the same domain as your site or API, so you don't need to deal with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+
+All features provided by Caddy are also supported by this custom build: [HTTP/3 and h2c support](https://caddyserver.com/docs/json/apps/http/servers/#experimental_http3), [compression](https://caddyserver.com/docs/caddyfile/directives/encode), [Prometheus metrics](https://caddyserver.com/docs/metrics) (with additional Mercure-specific metrics), profiler (`/debug/pprof/`)...
+
+Before switching to the Caddy build, be sure to [migrate your configuration](hub/config.md).
+
 ## 0.10
 
 This version is in sync with the latest version of the specification, which changed a lot. Upgrading to 0.10 **requires to change your code**. Carefully read this guide before upgrading the hub.
