@@ -2,18 +2,9 @@
 
 *Scalingo Fork: Deploy your own Mercure*
 
-Run your own Mercure instance with one click.
+# [DEPRECATED] Mercure on Scalingo
 
-[![Deploy](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/Scalingo/mercure-scalingo)
-
-## How to update when new version is released:
-
-```
-git clone git@github.com:Scalingo/mercure-scalingo
-cd mercure-scalingo
-git remote add <app name> git@scalingo.com:<app name>.git
-git push <app name> master
-```
+Please use the [official repository](https://github.com/dunglas/mercure) to deploy Mercure on Scalingo. The Scalingo-specific code is available in commit [922066f0](https://github.com/Scalingo/mercure-scalingo/commit/922066f0d13ba3c8815ef46677f12c37380b18f7).
 
 *Protocol and Reference Implementation*
 
